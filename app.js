@@ -27,7 +27,7 @@ const start = async () => {
   // IF YOU WANT TO RUN ON REAL DEVICE ON NETWORK IP THEN INCLUDE host
 
   // app.listen({ port: PORT,  host: "0.0.0.0"}, (err, addr) => {
-  app.listen({ port: PORT }, (err, addr) => {
+    app.listen({ port: PORT, host: "0.0.0.0" }, (err, addr) => {
     if (err) {
       console.log(err);
     } else {
