@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: moms-grocery-store
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        sync: false
+      - key: MONGO_URI
+        sync: false
+      - key: COOKIE_PASSWORD
+        sync: false
+    healthCheckPath: /healthcheck
+    autoDeploy: true
+    disk:
+      name: tmp
+      mountPath: /tmp
+      sizeGB: 1
