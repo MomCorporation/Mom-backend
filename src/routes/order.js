@@ -1,4 +1,4 @@
-import { addAddress, confirmOrder, createOrder, getOrderById, getOrders, updateOrderStatus } from "../controllers/order/order.js"
+import { addAddress,getAddress, confirmOrder, createOrder, getOrderById, getOrders, updateOrderStatus } from "../controllers/order/order.js"
 import { verifyToken } from "../middleware/auth.js"
 
 
@@ -17,4 +17,5 @@ export const orderRoutes = async(fastify , options)=>{
     fastify.post('/order/:orderId/confirm',confirmOrder)
     fastify.post("/order/:orderId",getOrderById)
     fastify.post("/addAddress",addAddress)
+    fastify.get("/getAddress/:customerId",getAddress)
 };

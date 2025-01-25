@@ -197,3 +197,23 @@ export const addAddress=async(req,reply)=>{
         return reply.code(500).send({ message: 'Internal server error', error: error.message });
     }
 }
+export const getAddress = async (req, reply) => {
+    try {
+        console.log("req.params: ", req.params);
+
+        const { customerId } = req.params;
+        console.log("customerId: ", customerId, " type: ", typeof(customerId));
+
+        const addresses = await Address.find({ customerId }).populate('customerId', 'fullName'); 
+        console.log("Addresses: ", addresses);
+
+        if (!addresses || addresses.length === 0) {
+            return reply.code(404).send({ message: 'No addresses found for the provided customerId.' });
+        }
+
+        return reply.code(200).send({ message: 'Addresses fetched successfully', addresses });
+    } catch (error) {
+        console.error('Error fetching address:', error);
+        return reply.code(500).send({ message: 'Internal server error', error: error.message });
+    }
+};

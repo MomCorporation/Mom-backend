@@ -5,31 +5,34 @@ import { PORT } from "./src/config/config.js";
 import { admin, buildAdminRouter } from "./src/config/setup.js";
 import { registerRoutes } from "./src/routes/index.js";
 import fastifySocketIO from "fastify-socket.io";
+
 const start = async () => {
+  // Connect to MongoDB
   await connectDB(process.env.MONGO_URI);
 
+  // Initialize Fastify instance
   const app = Fastify();
 
+  // Register Socket.IO with CORS settings
   app.register(fastifySocketIO, {
     cors: {
-      origin: "*",
+      origin: "*", // Adjust origin for security in production
     },
     pingInterval: 10000,
     pingTimeout: 5000,
     transports: ["websocket"],
   });
 
+  // Register application routes
   await registerRoutes(app);
 
+  // Register Admin Router
   await buildAdminRouter(app);
 
-  //IF YOU WANT TO RUN ON LOCALHOST THEN REMOVE host but
-  // IF YOU WANT TO RUN ON REAL DEVICE ON NETWORK IP THEN INCLUDE host
-
-  // app.listen({ port: PORT,  host: "0.0.0.0"}, (err, addr) => {
-    app.listen({ port: PORT, host: "0.0.0.0" }, (err, addr) => {
+  // Start the server
+  app.listen({ port: PORT, host: "0.0.0.0" }, (err, addr) => {
     if (err) {
-      console.log(err);
+      console.error(err);
     } else {
       console.log(
         `Blinkit Started on http://localhost:${PORT}${admin.options.rootPath}`
@@ -37,15 +40,18 @@ const start = async () => {
     }
   });
 
+  // Set up Socket.IO connection events
   app.ready().then(() => {
     app.io.on("connection", (socket) => {
       console.log("A User Connected ✅");
 
+      // Handle room joining
       socket.on("joinRoom", (orderId) => {
         socket.join(orderId);
-        console.log(` 🔴 User Joined room ${orderId}`);
+        console.log(`🔴 User Joined room ${orderId}`);
       });
 
+      // Handle disconnection
       socket.on("disconnect", () => {
         console.log("User Disconnected ❌");
       });
@@ -53,4 +59,5 @@ const start = async () => {
   });
 };
 
+// Start the application
 start();
