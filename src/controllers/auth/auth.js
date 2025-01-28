@@ -19,7 +19,7 @@ const generateTokens = (user)=>{
 
 export const loginCustomer = async (req,reply)=>{
     try{
-        const {phone} = req.body;
+        const {phone,liveLocation} = req.body;
         let customer = await Customer.findOne({phone});
 
         if(!customer){
@@ -27,6 +27,7 @@ export const loginCustomer = async (req,reply)=>{
                 phone,
                 role:"Customer",
                 isActivated:true,
+                liveLocation
             });
             await customer.save();
         }

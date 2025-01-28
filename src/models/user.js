@@ -21,7 +21,7 @@ const customerSchema = new mongoose.Schema({
         latitude:{type:Number},
         longitude:{type:Number},
     },
-    address:{type:String},
+    address:[{type:mongoose.Schema.Types.ObjectId,ref:"Address"}]
 })
 
 // Delivery Partner Schema
@@ -35,7 +35,7 @@ const deliveryPartnerSchema = new mongoose.Schema({
         latitude:{type:Number},
         longitude:{type:Number},
     },
-    address:{type:String},
+    address:{type:mongoose.Schema.Types.ObjectId,ref:"Address"},
     branch:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Branch",

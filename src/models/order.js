@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Counter from "./counter.js";
+import Address from "./address.js";
 import { DeliveryPartner } from "./user.js";
 
 const orderSchema = new mongoose.Schema({
@@ -37,19 +38,19 @@ const orderSchema = new mongoose.Schema({
     },
   ],
   deliveryLocation: {
-    latitude: { type: Number, required: true },
-    longitude: { type: Number, required: true },
-    address: { type: String },
+    latitude: { type: Number},
+    longitude: { type: Number},
+    address: { type: mongoose.Schema.Types.ObjectId, ref:"Address" },
   },
   pickupLocation: {
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true },
-    address: { type: String },
+    address: { type: mongoose.Schema.Types.ObjectId, ref:"Address" },
   },
   deliveryPersonLocation: {
     latitude: { type: Number },
     longitude: { type: Number },
-    address: { type: String },
+    // address: { type: String },
   },
   status: {
     type: String,
