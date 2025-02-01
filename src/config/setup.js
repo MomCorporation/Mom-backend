@@ -5,10 +5,8 @@ import * as Models from "../models/index.js";
 import { authenticate, COOKIE_PASSWORD, sessionStore } from "./config.js";
 import { dark, light, noSidebar } from "@adminjs/themes";
 
-// Register Mongoose adapter for AdminJS
 AdminJS.registerAdapter(AdminJSMongoose);
 
-// AdminJS setup with resources
 export const admin = new AdminJS({
   resources: [
     {
@@ -40,36 +38,34 @@ export const admin = new AdminJS({
     { resource: Models.Address },
   ],
 
-  // Branding settings for the AdminJS panel
   branding: {
     companyName: "MOM",
     withMadeWithLove: false,
-    favicon: "https://res.cloudinary.com/dponzgerb/image/upload/v1722852076/s32qztc3slzqukdletgj.png",
+    favicon:
+      "https://res.cloudinary.com/dponzgerb/image/upload/v1722852076/s32qztc3slzqukdletgj.png",
     logo: "https://res.cloudinary.com/dponzgerb/image/upload/v1722852076/s32qztc3slzqukdletgj.png",
   },
   defaultTheme: dark.id,
   availableThemes: [dark, light, noSidebar],
-  rootPath: "/admin",  // The root URL path for AdminJS
+  rootPath: "/admin",
 });
 
-// Build the authenticated router using Fastify
 export const buildAdminRouter = async (app) => {
   await AdminJSFastify.buildAuthenticatedRouter(
     admin,
     {
-      authenticate,               // Function to authenticate users
+      authenticate,
       cookiePassword: COOKIE_PASSWORD,
-      cookieName: "adminjs",       // Cookie name for admin session
+      cookieName: "adminjs",
     },
     app,
     {
-      store: sessionStore,         // MongoDB session store
-      saveUninitialized: true,     // Ensure session is saved even if not modified
-      secret: COOKIE_PASSWORD,     // Secret used for signing the session cookie
+      store: sessionStore,
+      saveUnintialized: true,
+      secret: COOKIE_PASSWORD,
       cookie: {
-        httpOnly: true,            // Ensures cookies cannot be accessed via JavaScript
-        secure: process.env.NODE_ENV === "production",  // Ensures cookies are only sent over HTTPS in production
-        maxAge: 24 * 60 * 60 * 1000,  // Set session expiration (1 day)
+        httpOnly: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
       },
     }
   );

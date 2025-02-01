@@ -62,7 +62,7 @@ export const loginDeliveryPartner = async (req,reply)=>{
         }
 
         const {accessToken , refreshToken} = generateTokens(deliveryPartner);
-        return reply.code(200).code({
+        return reply.code(200).send({
             message: "Login Successful" ,
             accessToken,
             refreshToken,
