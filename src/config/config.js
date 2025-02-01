@@ -17,11 +17,24 @@ sessionStore.on("error", (error) => {
 //FOR FIRST TIME
 
 export const authenticate = async (email, password) => {
-  if (email === "admin@gmail.com" && password === "12345678") {
-    return Promise.resolve({ email, password });
+  try {
+    console.log(`Attempting login for: ${email}`); // Log email for debugging
+
+    // Check if the email and password match the hardcoded credentials
+    if (email === "admin@gmail.com" && password === "12345678") {
+      console.log("Login successful!"); // Log successful login for debugging
+      return Promise.resolve({ email, password });
+    }
+
+    console.log("Invalid credentials"); // Log if credentials are invalid
+    return null;
+  } catch (error) {
+    // Catch any unexpected errors and log them
+    console.error("Error during authentication:", error);
+    return null;
   }
-  return null;
 };
+
 
 //AFTER CREATING ADMIN MANUALY COMMENT ABOVE AND UNCOMMENT BELOW
 
