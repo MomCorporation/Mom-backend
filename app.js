@@ -5,6 +5,7 @@ import { PORT } from "./src/config/config.js";
 import { admin, buildAdminRouter } from "./src/config/setup.js";
 import { registerRoutes } from "./src/routes/index.js";
 import fastifySocketIO from "fastify-socket.io";
+import fastifyCors from "fastify-cors"; // Import fastify-cors
 
 const start = async () => {
   // Connect to MongoDB
@@ -12,6 +13,14 @@ const start = async () => {
 
   // Initialize Fastify instance
   const app = Fastify();
+
+  // Register CORS with settings
+  app.register(fastifyCors, {
+    origin: "*", // Allow all origins for now, but change to specific origins for production
+    methods: ["GET", "POST", "PUT", "DELETE"], // Adjust methods if needed
+    allowedHeaders: ["Content-Type", "Authorization"], // Allow specific headers
+    credentials: true, // Allow credentials if needed
+  });
 
   // Register Socket.IO with CORS settings
   app.register(fastifySocketIO, {
