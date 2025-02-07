@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Address from "../../models/address.js";
 import Branch from "../../models/branch.js"
 import Order from "../../models/order.js";
@@ -103,7 +104,7 @@ export const createOrder = async (req, reply) => {
             return reply.code(404).send({ message: "Branch not found" });
         }
 
-        console.log("Branch data: ",branchData);
+        console.log("Branch data: ", branchData);
 
         // Resolve the delivery address
         let deliveryAddress;
@@ -129,7 +130,7 @@ export const createOrder = async (req, reply) => {
                 // Find product by name (string)
                 const product = await Product.findOne({ name: item.item }); // Find product by name
                 if (!product) throw new Error(`Item not found: ${item.item}`);
-                
+
                 return {
                     id: item.id,
                     item: {
@@ -326,8 +327,20 @@ export const getOrderById = async (req, reply) => {
 }
 
 export const addAddress = async (req, reply) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    
     try {
         const { customerId, fullName, country, addressLine1, addressLine2, city, postalCode, phoneNumber, isDefault } = req.body;
+
+        if (isDefault) {
+            // Set all existing addresses for this customer to isDefault: false
+            await Address.updateMany(
+                { customerId, isDefault: true }, 
+                { $set: { isDefault: false } }, 
+                { session }
+            );
+        }
 
         // Create the new address
         const newAddress = new Address({
@@ -339,22 +352,32 @@ export const addAddress = async (req, reply) => {
             country,
             postalCode,
             phoneNumber,
-            isDefault,
+            isDefault: !!isDefault, // Ensure it's a boolean
         });
 
-        const savedAddress = await newAddress.save();
+        // Save the new address with the session
+        const savedAddress = await newAddress.save({ session });
 
         // Update the customer's addresses array
-        await Customer.findByIdAndUpdate(customerId, {
-            $push: { address: savedAddress._id },
-        });
+        await Customer.findByIdAndUpdate(
+            customerId,
+            { $push: { address: savedAddress._id } },
+            { session }
+        );
+
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
 
         return reply.code(201).send({ message: 'Address added successfully', address: savedAddress });
     } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
         console.error('Error adding address:', error);
         return reply.code(500).send({ message: 'Internal server error', error: error.message });
     }
 };
+
 
 export const getAddress = async (req, reply) => {
     try {
@@ -374,5 +397,42 @@ export const getAddress = async (req, reply) => {
     } catch (error) {
         console.error('Error fetching address:', error);
         return reply.code(500).send({ message: 'Internal server error', error: error.message });
+    }
+};
+
+export const setDefaultAddress = async (request, reply) => {
+    const { addressId } = request.params;
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const addressToSetDefault = await Address.findById(addressId).session(session);
+        if (!addressToSetDefault) {
+            await session.abortTransaction();
+            session.endSession();
+            return reply.code(404).send({ message: "Address not found" });
+        }
+
+        const customerId = addressToSetDefault.customerId;
+
+        // Set all addresses of the user to isDefault: false, then set the target address to true
+        await Address.updateMany({ customerId }, { $set: { isDefault: false } }, { session });
+
+        // Set only the selected address to isDefault: true
+        await Address.updateOne({ _id: addressId }, { $set: { isDefault: true } }, { session });
+
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
+
+        return reply.code(200).send({ message: "Default address updated successfully" });
+
+    } catch (error) {
+        // Abort the transaction and send an error response
+        await session.abortTransaction();
+        session.endSession();
+        console.error("Error updating default address:", error);
+        return reply.code(500).send({ message: "Error updating default address", error: error.message });
     }
 };
